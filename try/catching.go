@@ -41,27 +41,19 @@ func tryRecover(err *error) {
 	switch r := recover().(type) {
 	case nil:
 		return
-	case notPanic:
-		*err = r.Err
-	case *notPanic:
-		*err = r.Err
+	case throwable:
+		*err = &r
+	case *throwable:
+		*err = r
 	default:
-		panic(r) // is not notPanic, re-panic it
+		panic(r) // is not throwable, re-panic it
 	}
-}
-
-type notPanic struct {
-	Err error
-}
-
-func (this *notPanic) Error() string {
-	return this.Err.Error()
 }
 
 // IsNotPanic check whether err is raised by Throw[f].
 func IsNotPanic(err any) bool {
 	switch err.(type) {
-	case notPanic, *notPanic:
+	case throwable, *throwable:
 		return true
 	default:
 		return false
